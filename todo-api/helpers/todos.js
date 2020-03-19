@@ -11,7 +11,6 @@ exports.getTodos = function(req, res) {
 };
 
 exports.createTodo = function(req, res) {
-	console.log("in createTodo");
 	db.Todo.create(req.body)
 	.then(function(newTodo) {
 		res.status(201).json(newTodo);
@@ -50,7 +49,6 @@ exports.deleteTodo = function(req, res) {
 		res.send(err);
 	})
 };
-
 
 
 module.exports = exports;
