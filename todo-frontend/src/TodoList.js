@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import TodoForm from './TodoForm';
 import TodoItem from './TodoItem';
-const APIURL = 'api/todos';
+const APIURL = 'api/todos/';
 
 class TodoList extends Component {
 	constructor() {
@@ -36,7 +36,52 @@ class TodoList extends Component {
 	}
 	
 	addTodo(val) {
-		console.log(`Adding Todo From Form: ${val}`);
+		fetch(APIURL, {
+			method: 'post',
+			headers: new Headers({
+				'Content-Type': 'application/json'
+			}),
+			body: JSON.stringify({name: val})
+		})
+		.then(resp => {
+			if (!resp.ok) {
+				if (resp.status >=400 && resp.status < 500) {
+					return resp.json().then(data => {
+						let err = {errorMessage: data.message};
+						throw err;
+					})
+				} else {
+					let err = {errorMessage: "Please try again later. The server is not responding."}
+					throw err;
+				}
+			}
+			return resp.json();
+		})
+		.then(newTodo => this.setState({todos: [...this.state.todos, newTodo]}));
+	}
+	
+	deleteTodo(id) {
+		const deleteUrl = APIURL + id;
+		fetch(deleteUrl, {
+			method: 'delete',
+		})
+		.then(resp => {
+			if (!resp.ok) {
+				if (resp.status >=400 && resp.status < 500) {
+					return resp.json().then(data => {
+						let err = {errorMessage: data.message};
+						throw err;
+					})
+				} else {
+					let err = {errorMessage: "Please try again later. The server is not responding."}
+					throw err;
+				}
+			}
+			return resp.json();
+		})
+		.then(() => {
+			const todos = this.state.todos.filter(todo => todo._id !== id);
+			this.setState({todos})});
 	}
 	
 	render() {
@@ -44,6 +89,7 @@ class TodoList extends Component {
 			<TodoItem
 				key={t._id}
 				{...t}
+				onDelete={this.deleteTodo.bind(this, t._id)}
 			/>									  
 	  	)
 		return (
